@@ -3,6 +3,7 @@ import { D, FRAMEWORK_META, V1_FRAMEWORKS } from '../design';
 import { useStore, formatEntryDate } from '../store';
 import { interpretDream } from '../api/interpret';
 import { FrameBox } from '../components/FrameBox';
+import { InterpretationLoader } from '../components/InterpretationLoader';
 import type { Interpretation as InterpretationType, Screen } from '../types';
 import type { FrameworkKey } from '../design';
 
@@ -140,34 +141,7 @@ export function Interpretation({ navigate, dreamId, initialFramework }: Props) {
       </div>
 
       {/* Loading */}
-      {loading && (
-        <div style={{ padding: '40px 22px', textAlign: 'center' }}>
-          <div style={{
-            fontFamily: D.slab,
-            fontSize: 18,
-            fontStyle: 'italic',
-            color: D.textSoft,
-            lineHeight: 1.6,
-            animation: 'fadeIn 0.3s ease',
-          }}>
-            Consulting the archive…
-          </div>
-          <div style={{ marginTop: 20, display: 'flex', justifyContent: 'center', gap: 6 }}>
-            {[0, 1, 2].map(i => (
-              <div
-                key={i}
-                style={{
-                  width: 4,
-                  height: 4,
-                  background: D.gold,
-                  transform: 'rotate(45deg)',
-                  animation: `blink 1.4s ease-in-out ${i * 0.3}s infinite`,
-                }}
-              />
-            ))}
-          </div>
-        </div>
-      )}
+      {loading && <InterpretationLoader framework={framework} />}
 
       {/* Error */}
       {error && !loading && (
