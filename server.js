@@ -23,6 +23,54 @@ Tone: clear, evidence-based, and practical. Intellectually rigorous but never co
 Tone: reverent, narrative, mythic. You help the dreamer see their dream in the context of humanity's oldest wisdom. Not fortune-telling — this is about the soul's communication with something larger than the waking self. Speak with gravitas and wonder.`,
 };
 
+// ── Tool definition — forces structured output, no JSON parsing issues ──
+
+const INTERPRETATION_TOOL = {
+  name: 'record_interpretation',
+  description: 'Record the completed dream interpretation in structured form.',
+  input_schema: {
+    type: 'object',
+    properties: {
+      title: {
+        type: 'string',
+        description: 'Short, evocative title for this dream. 3–7 words, poetic, not a full sentence. Example: "The Library of Open Doors".',
+      },
+      overview: {
+        type: 'string',
+        description: '1–2 sentence thematic summary — the heart of this dream.',
+      },
+      symbols: {
+        type: 'array',
+        description: '2–4 key symbols from the dream.',
+        items: {
+          type: 'object',
+          properties: {
+            name:    { type: 'string', description: 'Name of the symbol.' },
+            meaning: { type: 'string', description: 'What this symbol means in this framework, 1–2 sentences.' },
+          },
+          required: ['name', 'meaning'],
+        },
+      },
+      emotionalLandscape: {
+        type: 'string',
+        description: '2–3 sentences on what the emotional texture of the dream reveals.',
+      },
+      wakingLife: {
+        type: 'string',
+        description: '2–3 sentences connecting this dream to the dreamer\'s likely waking circumstances. Speak in possibilities, not certainties.',
+      },
+      reflectionPrompts: {
+        type: 'array',
+        description: '2–3 open-ended reflection questions for the dreamer to sit with.',
+        items: { type: 'string' },
+        minItems: 2,
+        maxItems: 3,
+      },
+    },
+    required: ['title', 'overview', 'symbols', 'emotionalLandscape', 'wakingLife', 'reflectionPrompts'],
+  },
+};
+
 function buildPrompt(dream, recentDreams) {
   const context = recentDreams?.length > 0
     ? `\n\nFor context, the dreamer's recent dreams:\n${recentDreams.map((d, i) => `${i + 1}. "${d.title}" — ${d.body?.slice(0, 100)}...`).join('\n')}`
@@ -32,27 +80,7 @@ function buildPrompt(dream, recentDreams) {
     ? `\nEmotional state on waking: ${dream.moods.join(', ')}`
     : '';
 
-  return `Dream entry:
-
-${dream.body}${moods}${context}
-
-Please interpret this dream and respond with valid JSON matching this exact structure:
-{
-  "title": "A short, evocative title for this dream (3–7 words, poetic, not a full sentence — e.g. 'The Library of Open Doors')",
-  "overview": "A 1–2 sentence thematic summary — the heart of this dream.",
-  "symbols": [
-    { "name": "Symbol name", "meaning": "What this symbol means in this framework, 1–2 sentences." }
-  ],
-  "emotionalLandscape": "2–3 sentences on what the dream's emotional texture reveals.",
-  "wakingLife": "2–3 sentences connecting this dream to the dreamer's likely waking circumstances. Speak in possibilities, not certainties.",
-  "reflectionPrompts": [
-    "First reflection question — open-ended, inviting genuine self-inquiry.",
-    "Second reflection question.",
-    "Third reflection question."
-  ]
-}
-
-Identify 2–4 key symbols. Respond ONLY with valid JSON — no preamble, no explanation outside the JSON.`;
+  return `Dream entry:\n\n${dream.body}${moods}${context}\n\nInterpret this dream thoroughly, then call record_interpretation with your analysis.`;
 }
 
 // ── API route ─────────────────────────────────────────────────
@@ -79,19 +107,19 @@ app.post('/api/interpret', async (req, res) => {
 
     const message = await client.messages.create({
       model: 'claude-opus-4-7',
-      max_tokens: 1024,
+      max_tokens: 1500,
       system: systemPrompt,
-      messages: [
-        { role: 'user', content: buildPrompt(dream, recentDreams) },
-      ],
+      tools: [INTERPRETATION_TOOL],
+      tool_choice: { type: 'tool', name: 'record_interpretation' },
+      messages: [{ role: 'user', content: buildPrompt(dream, recentDreams) }],
     });
 
-    const raw = message.content[0]?.type === 'text' ? message.content[0].text : '';
-    const jsonMatch = raw.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error('No JSON found in model response.');
+    const toolBlock = message.content.find(b => b.type === 'tool_use');
+    if (!toolBlock || toolBlock.type !== 'tool_use') {
+      throw new Error('Model did not return a structured interpretation.');
+    }
 
-    const parsed = JSON.parse(jsonMatch[0]);
-    res.json(parsed);
+    res.json(toolBlock.input);
   } catch (err) {
     console.error('Interpretation error:', err);
     res.status(500).json({ error: err instanceof Error ? err.message : 'Interpretation failed.' });
