@@ -5,3 +5,7 @@ dist
 .DS_Store
 ios/App/App/public
 android/app/src/main/assets/public
+
+# Android signing — never commit
+android/keystore/
+android/keystore.properties

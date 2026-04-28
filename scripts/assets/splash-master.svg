@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2732 2732" width="2732" height="2732">
+  <rect width="2732" height="2732" fill="#000000"/>
+
+  <!-- Subtle background stars scattered across field -->
+  <circle cx="400"  cy="320"  r="3"   fill="#c9a866" opacity="0.25"/>
+  <circle cx="2330" cy="280"  r="2.5" fill="#c9a866" opacity="0.2"/>
+  <circle cx="220"  cy="1400" r="2"   fill="#c9a866" opacity="0.18"/>
+  <circle cx="2510" cy="1600" r="3"   fill="#c9a866" opacity="0.2"/>
+  <circle cx="900"  cy="2400" r="2.5" fill="#c9a866" opacity="0.18"/>
+  <circle cx="1840" cy="2460" r="2"   fill="#c9a866" opacity="0.15"/>
+  <circle cx="680"  cy="600"  r="2"   fill="#c9a866" opacity="0.2"/>
+  <circle cx="2050" cy="520"  r="2.5" fill="#c9a866" opacity="0.18"/>
+  <circle cx="350"  cy="2100" r="2"   fill="#c9a866" opacity="0.15"/>
+  <circle cx="2400" cy="2200" r="3"   fill="#c9a866" opacity="0.2"/>
+  <circle cx="1366" cy="400"  r="3"   fill="#c9a866" opacity="0.25"/>
+
+  <!-- Outer constellation ring -->
+  <circle cx="1366" cy="1180" r="540" fill="none" stroke="#c9a866" stroke-width="2" stroke-dasharray="8 18" opacity="0.2"/>
+
+  <!-- Wing lines — left -->
+  <line x1="1366" y1="1100" x2="860"  y2="1300" stroke="#c9a866" stroke-width="4.5" opacity="0.45"/>
+  <line x1="860"  y1="1300" x2="960"  y2="1540" stroke="#c9a866" stroke-width="3.5" opacity="0.3"/>
+  <!-- Wing lines — right -->
+  <line x1="1366" y1="1100" x2="1872" y2="1300" stroke="#c9a866" stroke-width="4.5" opacity="0.45"/>
+  <line x1="1872" y1="1300" x2="1772" y2="1540" stroke="#c9a866" stroke-width="3.5" opacity="0.3"/>
+
+  <!-- Body line -->
+  <line x1="1366" y1="1100" x2="1366" y2="1600" stroke="#c9a866" stroke-width="3.5" opacity="0.35"/>
+
+  <!-- Ear tufts -->
+  <line x1="1230" y1="870" x2="1170" y2="700" stroke="#c9a866" stroke-width="4.5" opacity="0.55"/>
+  <line x1="1502" y1="870" x2="1562" y2="700" stroke="#c9a866" stroke-width="4.5" opacity="0.55"/>
+
+  <!-- Head arc -->
+  <path d="M 1110 1060 Q 1366 800 1622 1060" fill="none" stroke="#c9a866" stroke-width="3.5" opacity="0.45"/>
+
+  <!-- Left eye — glow -->
+  <circle cx="1230" cy="1100" r="110" fill="#c9a866" opacity="0.06"/>
+  <!-- Left eye — ring -->
+  <circle cx="1230" cy="1100" r="88"  fill="none" stroke="#c9a866" stroke-width="5.5" opacity="0.65"/>
+  <!-- Left eye — iris -->
+  <circle cx="1230" cy="1100" r="50"  fill="#c9a866" opacity="0.12"/>
+  <!-- Left eye — pupil -->
+  <circle cx="1230" cy="1100" r="24"  fill="#c9a866" opacity="0.88"/>
+  <!-- Left eye — highlight -->
+  <circle cx="1248" cy="1083" r="8"   fill="#ffffff" opacity="0.55"/>
+
+  <!-- Right eye — glow -->
+  <circle cx="1502" cy="1100" r="110" fill="#c9a866" opacity="0.06"/>
+  <!-- Right eye — ring -->
+  <circle cx="1502" cy="1100" r="88"  fill="none" stroke="#c9a866" stroke-width="5.5" opacity="0.65"/>
+  <!-- Right eye — iris -->
+  <circle cx="1502" cy="1100" r="50"  fill="#c9a866" opacity="0.12"/>
+  <!-- Right eye — pupil -->
+  <circle cx="1502" cy="1100" r="24"  fill="#c9a866" opacity="0.88"/>
+  <!-- Right eye — highlight -->
+  <circle cx="1520" cy="1083" r="8"   fill="#ffffff" opacity="0.55"/>
+
+  <!-- Beak -->
+  <polygon points="1366,1220 1324,1278 1366,1312 1408,1278" fill="#c9a866" opacity="0.82"/>
+
+  <!-- Constellation dots: ear tips -->
+  <circle cx="1170" cy="700" r="13" fill="#c9a866" opacity="0.88"/>
+  <circle cx="1562" cy="700" r="13" fill="#c9a866" opacity="0.88"/>
+
+  <!-- Wing tips -->
+  <circle cx="860"  cy="1300" r="11" fill="#c9a866" opacity="0.7"/>
+  <circle cx="1872" cy="1300" r="11" fill="#c9a866" opacity="0.7"/>
+  <circle cx="960"  cy="1540" r="9"  fill="#c9a866" opacity="0.55"/>
+  <circle cx="1772" cy="1540" r="9"  fill="#c9a866" opacity="0.55"/>
+
+  <!-- Central chest star -->
+  <polygon points="1366,1470 1386,1506 1366,1542 1346,1506" fill="#c9a866" opacity="0.75"/>
+
+  <!-- Wordmark: NOCTUA -->
+  <!-- Using geometric letter forms rendered as SVG paths at ~90px cap height -->
+  <text
+    x="1366" y="1780"
+    font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+    font-size="96"
+    font-weight="200"
+    letter-spacing="36"
+    text-anchor="middle"
+    fill="#c9a866"
+    opacity="0.9"
+  >NOCTUA</text>
+
+  <!-- Subtitle rule + tagline -->
+  <line x1="1066" y1="1830" x2="1666" y2="1830" stroke="#c9a866" stroke-width="1" opacity="0.3"/>
+  <text
+    x="1366" y="1880"
+    font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+    font-size="36"
+    font-weight="300"
+    letter-spacing="10"
+    text-anchor="middle"
+    fill="#c9a866"
+    opacity="0.45"
+  >DREAM JOURNAL</text>
+</svg>
