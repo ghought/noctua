@@ -3,3 +3,5 @@ dist
 .env
 .env.local
 .DS_Store
+ios/App/App/public
+android/app/src/main/assets/public

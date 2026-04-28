@@ -4,16 +4,29 @@ import { useStore, formatEntryDate } from '../store';
 import { interpretDream } from '../api/interpret';
 import { FrameBox } from '../components/FrameBox';
 import { InterpretationLoader } from '../components/InterpretationLoader';
+import { isExplorer } from '../lib/purchases';
 import type { Interpretation as InterpretationType, Screen } from '../types';
 import type { FrameworkKey } from '../design';
+
+const FREE_TIER_LIMIT = 3;
+
+function getInterpretationCountThisMonth(dreams: ReturnType<typeof useStore>['dreams']): number {
+  const monthStart = new Date();
+  monthStart.setDate(1);
+  monthStart.setHours(0, 0, 0, 0);
+  return dreams.flatMap(d => d.interpretations)
+    .filter(i => new Date(i.generatedAt) >= monthStart)
+    .length;
+}
 
 interface Props {
   navigate: (s: Screen) => void;
   dreamId: string;
   initialFramework?: FrameworkKey;
+  onShowPaywall: () => void;
 }
 
-export function Interpretation({ navigate, dreamId, initialFramework }: Props) {
+export function Interpretation({ navigate, dreamId, initialFramework, onShowPaywall }: Props) {
   const { getDream, dreams, addInterpretation, updateDreamTitle } = useStore();
   const dream = getDream(dreamId);
 
@@ -36,6 +49,13 @@ export function Interpretation({ navigate, dreamId, initialFramework }: Props) {
 
   const generate = async () => {
     if (!dream) return;
+
+    const explorer = await isExplorer();
+    if (!explorer && getInterpretationCountThisMonth(dreams) >= FREE_TIER_LIMIT) {
+      onShowPaywall();
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {

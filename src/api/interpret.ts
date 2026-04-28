@@ -1,3 +1,4 @@
+import { Capacitor } from '@capacitor/core';
 import type { FrameworkKey } from '../design';
 import type { DreamEntry, Interpretation } from '../types';
 
@@ -11,12 +12,18 @@ interface ServerResponse {
   error?: string;
 }
 
+// On native (iOS/Android) there's no Vite proxy, so we need the full Railway URL.
+// On web, use a relative path so the Vite proxy (dev) and Express static serve (prod) both work.
+const API_BASE = Capacitor.isNativePlatform()
+  ? (import.meta as any).env?.VITE_API_URL ?? ''
+  : '';
+
 export async function interpretDream(
   dream: DreamEntry,
   framework: FrameworkKey,
   recentDreams: DreamEntry[] = [],
 ): Promise<{ interpretation: Interpretation; title: string }> {
-  const res = await fetch('/api/interpret', {
+  const res = await fetch(`${API_BASE}/api/interpret`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

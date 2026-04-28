@@ -7,6 +7,24 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
 app.use(express.json({ limit: '10mb' }));
 
+// Allow requests from Capacitor iOS/Android apps and web origins
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  const allowed = [
+    'capacitor://localhost',
+    'ionic://localhost',
+    'http://localhost',
+    'http://localhost:5173',
+  ];
+  if (!origin || allowed.some(o => origin.startsWith(o))) {
+    res.setHeader('Access-Control-Allow-Origin', origin ?? '*');
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
+});
+
 // ── Framework system prompts ──────────────────────────────────
 
 const SYSTEM_PROMPTS = {
