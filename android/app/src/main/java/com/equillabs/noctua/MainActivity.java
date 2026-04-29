@@ -1,4 +1,4 @@
-package com.garretthoughton.noctua;
+package com.equillabs.noctua;
 
 import com.getcapacitor.BridgeActivity;
 

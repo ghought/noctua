@@ -25,8 +25,12 @@ export async function isExplorer(): Promise<boolean> {
 
   try {
     const Purchases = await getPurchases();
-    const { customerInfo } = await Purchases.getCustomerInfo();
-    return customerInfo.entitlements.active['Noctua Pro'] !== undefined;
+    // Race against a 3s timeout — RevenueCat native calls can hang on simulator
+    const timeout = new Promise<boolean>(resolve => setTimeout(() => resolve(false), 3000));
+    const check = Purchases.getCustomerInfo().then(
+      ({ customerInfo }) => customerInfo.entitlements.active['Noctua Pro'] !== undefined
+    ).catch(() => false);
+    return await Promise.race([check, timeout]);
   } catch {
     return false;
   }

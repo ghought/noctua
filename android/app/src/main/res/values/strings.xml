@@ -2,6 +2,6 @@
 <resources>
     <string name="app_name">Noctua</string>
     <string name="title_activity_main">Noctua</string>
-    <string name="package_name">com.garretthoughton.noctua</string>
-    <string name="custom_url_scheme">com.garretthoughton.noctua</string>
+    <string name="package_name">com.equillabs.noctua</string>
+    <string name="custom_url_scheme">com.equillabs.noctua</string>
 </resources>

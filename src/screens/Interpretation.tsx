@@ -49,26 +49,40 @@ export function Interpretation({ navigate, dreamId, initialFramework, onShowPayw
 
   const generate = async () => {
     if (!dream) return;
-
-    const explorer = await isExplorer();
-    if (!explorer && getInterpretationCountThisMonth(dreams) >= FREE_TIER_LIMIT) {
-      onShowPaywall();
-      return;
-    }
-
     setLoading(true);
     setError(null);
+
+    // Safety net: if anything hangs, surface an error after 45s rather than loading forever
+    let done = false;
+    const safetyTimer = setTimeout(() => {
+      if (!done) {
+        done = true;
+        setLoading(false);
+        setError('Request timed out. Please check your connection and try again.');
+      }
+    }, 45000);
+
     try {
+      const count = getInterpretationCountThisMonth(dreams);
+      if (count >= FREE_TIER_LIMIT) {
+        const explorer = await isExplorer();
+        if (!explorer) {
+          onShowPaywall();
+          return;
+        }
+      }
+
       const recent = dreams.filter(d => d.id !== dream.id).slice(0, 5);
       const { interpretation, title } = await interpretDream(dream, framework, recent);
       addInterpretation(dream.id, interpretation);
-      // Update title on first interpretation (when title is still the placeholder)
       if (dream.title === '— recording —' || dream.title === '— fragment —') {
         updateDreamTitle(dream.id, title);
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Interpretation failed. Please try again.');
     } finally {
+      done = true;
+      clearTimeout(safetyTimer);
       setLoading(false);
     }
   };
