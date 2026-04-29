@@ -1,4 +1,4 @@
-package com.equillabs.noctua;
+package com.westendmedia.noctua;
 
 import com.getcapacitor.BridgeActivity;
 

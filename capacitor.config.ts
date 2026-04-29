@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.equillabs.noctua',
+  appId: 'com.westendmedia.noctua',
   appName: 'Noctua',
   webDir: 'dist',
   plugins: {

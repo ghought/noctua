@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace = "com.equillabs.noctua"
+    namespace = "com.westendmedia.noctua"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.equillabs.noctua"
+        applicationId "com.westendmedia.noctua"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
