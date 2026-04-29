@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="500">
+  <rect width="1024" height="500" fill="#000000"/>
+  <circle cx="30" cy="40" r="2.5" fill="#c9a866" opacity="0.2"/><circle cx="990" cy="60" r="2" fill="#c9a866" opacity="0.18"/><circle cx="60" cy="460" r="2" fill="#c9a866" opacity="0.15"/><circle cx="980" cy="440" r="2.5" fill="#c9a866" opacity="0.18"/><circle cx="512" cy="30" r="2.5" fill="#c9a866" opacity="0.2"/>
+  
+    <circle cx="363.84000000000003" cy="243.84" r="108.8" fill="none" stroke="#c9a866" stroke-width="1.5" stroke-dasharray="4 10" opacity="0.2"/>
+    <line x1="363.84000000000003" y1="220.8" x2="283.2" y2="259.20000000000005" stroke="#c9a866" stroke-width="3" opacity="0.45"/>
+    <line x1="283.2" y1="259.20000000000005" x2="299.2" y2="297.6" stroke="#c9a866" stroke-width="2.5" opacity="0.3"/>
+    <line x1="363.84000000000003" y1="220.8" x2="444.48" y2="259.20000000000005" stroke="#c9a866" stroke-width="3" opacity="0.45"/>
+    <line x1="444.48" y1="259.20000000000005" x2="428.48" y2="297.6" stroke="#c9a866" stroke-width="2.5" opacity="0.3"/>
+    <line x1="363.84000000000003" y1="220.8" x2="363.84000000000003" y2="304" stroke="#c9a866" stroke-width="2.5" opacity="0.35"/>
+    <line x1="337.6" y1="179.2" x2="328" y2="147.2" stroke="#c9a866" stroke-width="3" opacity="0.55"/>
+    <line x1="390.08000000000004" y1="179.2" x2="399.68" y2="147.2" stroke="#c9a866" stroke-width="3" opacity="0.55"/>
+    <path d="M 321.6 217.6 Q 363.84000000000003 166.4 406.08000000000004 217.6" fill="none" stroke="#c9a866" stroke-width="2.5" opacity="0.4"/>
+    <circle cx="337.6" cy="227.20000000000002" r="21.12" fill="#c9a866" opacity="0.06"/>
+    <circle cx="337.6" cy="227.20000000000002" r="16.64" fill="none" stroke="#c9a866" stroke-width="3.5" opacity="0.65"/>
+    <circle cx="337.6" cy="227.20000000000002" r="9.6" fill="#c9a866" opacity="0.12"/>
+    <circle cx="337.6" cy="227.20000000000002" r="4.48" fill="#c9a866" opacity="0.88"/>
+    <circle cx="340.8" cy="224.64000000000001" r="1.6"  fill="#fff"   opacity="0.5"/>
+    <circle cx="390.08000000000004" cy="227.20000000000002" r="21.12" fill="#c9a866" opacity="0.06"/>
+    <circle cx="390.08000000000004" cy="227.20000000000002" r="16.64" fill="none" stroke="#c9a866" stroke-width="3.5" opacity="0.65"/>
+    <circle cx="390.08000000000004" cy="227.20000000000002" r="9.6" fill="#c9a866" opacity="0.12"/>
+    <circle cx="390.08000000000004" cy="227.20000000000002" r="4.48" fill="#c9a866" opacity="0.88"/>
+    <circle cx="393.28" cy="224.64000000000001" r="1.6"  fill="#fff"   opacity="0.5"/>
+    <polygon points="363.84000000000003,246.4 356.8,255.36 363.84000000000003,261.76 370.88,255.36" fill="#c9a866" opacity="0.82"/>
+    <circle cx="328" cy="147.2" r="2.56" fill="#c9a866" opacity="0.88"/>
+    <circle cx="399.68" cy="147.2" r="2.56" fill="#c9a866" opacity="0.88"/>
+    <circle cx="283.2" cy="259.20000000000005" r="2.24" fill="#c9a866" opacity="0.7"/>
+    <circle cx="444.48" cy="259.20000000000005" r="2.24" fill="#c9a866" opacity="0.7"/>
+    <polygon points="363.84000000000003,281.6 367.68,288 363.84000000000003,294.4 360,288" fill="#c9a866" opacity="0.75"/>
+  <line x1="430" y1="60" x2="430" y2="440" stroke="#c9a866" stroke-width="0.8" opacity="0.12"/>
+  <text x="480" y="148" font-family="'Courier New', monospace" font-size="17" fill="#c9a866" letter-spacing="7" opacity="0.7">N O C T U A</text><text x="480" y="196" font-family="Georgia, serif" font-size="86" fill="#e8e6e0" font-style="italic">Dream</text><text x="480" y="284" font-family="Georgia, serif" font-size="86" fill="#c9a866" font-style="italic">Journal.</text><text x="480" y="360" font-family="'Helvetica Neue', sans-serif" font-size="20" fill="#a8a59c" letter-spacing="2">Capture the night. Interpret the depths.</text><line x1="480" y1="390" x2="600" y2="390" stroke="#c9a866" stroke-width="1" opacity="0.4"/>
+    <polygon points="608,390 615,383 622,390 615,397" fill="#c9a866" opacity="0.5"/>
+    <line x1="630" y1="390" x2="750" y2="390" stroke="#c9a866" stroke-width="1" opacity="0.4"/>
+</svg>
