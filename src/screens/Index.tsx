@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { D } from '../design';
+import { D, primaryButton, smallTextButton, tapBase } from '../design';
 import { useStore } from '../store';
 import { TabBar } from '../components/TabBar';
 import type { Screen, SymbolRecord } from '../types';
@@ -47,7 +47,7 @@ export function Index({ navigate }: Props) {
       paddingBottom: 90,
     }}>
       {/* Top */}
-      <div style={{ padding: '56px 22px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ padding: '48px 22px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ fontFamily: D.mono, fontSize: 9, letterSpacing: 2, color: D.gold }}>NOCTUA · INDEX</div>
         <div style={{ fontFamily: D.mono, fontSize: 9, letterSpacing: 2, color: D.textDim }}>
           {symbols.length} {symbols.length === 1 ? 'ENTRY' : 'ENTRIES'}
@@ -113,14 +113,8 @@ export function Index({ navigate }: Props) {
           <button
             onClick={() => setQuery('')}
             style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              fontFamily: D.mono,
-              fontSize: 9,
-              color: D.textDim,
-              letterSpacing: 1.5,
-              padding: 0,
+              ...smallTextButton(D.textDim),
+              minHeight: 36,
             }}
           >
             CLEAR
@@ -168,16 +162,8 @@ export function Index({ navigate }: Props) {
           <button
             onClick={() => navigate({ name: 'capture' })}
             style={{
+              ...primaryButton(),
               marginTop: 24,
-              padding: '10px 24px',
-              background: D.gold,
-              color: D.bg,
-              fontFamily: D.mono,
-              fontSize: 10,
-              letterSpacing: 2,
-              fontWeight: 600,
-              border: 'none',
-              cursor: 'pointer',
             }}
           >
             BEGIN ENTRY →
@@ -232,13 +218,14 @@ export function Index({ navigate }: Props) {
                       }
                     }}
                     style={{
+                      ...tapBase,
                       display: 'block',
                       width: '100%',
                       textAlign: 'left',
                       background: 'none',
                       border: 'none',
                       cursor: 'pointer',
-                      padding: '10px 0',
+                      padding: '14px 0',
                       borderBottom: i < group.symbols.length - 1 ? `1px solid ${D.ruleSoft}` : 'none',
                     }}
                   >

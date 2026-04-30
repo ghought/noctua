@@ -6,26 +6,51 @@ async function getPurchases() {
   return Purchases;
 }
 
-export async function initPurchases() {
-  if (!Capacitor.isNativePlatform()) return;
+function describePurchasesError(error: unknown) {
+  if (error instanceof Error) {
+    return { name: error.name, message: error.message, stack: error.stack };
+  }
+  if (typeof error === 'object' && error !== null) {
+    return error;
+  }
+  return { message: String(error) };
+}
 
-  const Purchases = await getPurchases();
+// Module-level init promise — getOfferings/isExplorer await this so they
+// never call RevenueCat before configure() has finished
+let _initPromise: Promise<void> = Promise.resolve();
 
-  const iosKey = (import.meta as any).env?.VITE_REVENUECAT_IOS_KEY as string | undefined;
-  const androidKey = (import.meta as any).env?.VITE_REVENUECAT_ANDROID_KEY as string | undefined;
+export function initPurchases(): Promise<void> {
+  if (!Capacitor.isNativePlatform()) return Promise.resolve();
 
-  const apiKey = (Capacitor.getPlatform() === 'ios' ? iosKey : androidKey) ?? '';
-  if (!apiKey) return;
+  _initPromise = (async () => {
+    const Purchases = await getPurchases();
+    const iosKey = (import.meta as any).env?.VITE_REVENUECAT_IOS_KEY as string | undefined;
+    const androidKey = (import.meta as any).env?.VITE_REVENUECAT_ANDROID_KEY as string | undefined;
+    const apiKey = (Capacitor.getPlatform() === 'ios' ? iosKey : androidKey) ?? '';
+    if (!apiKey) {
+      console.warn(`[purchases] missing RevenueCat API key for ${Capacitor.getPlatform()}`);
+      return;
+    }
+    await Purchases.configure({ apiKey });
+  })().catch(err => console.warn('[purchases] init failed:', describePurchasesError(err)));
 
-  await Purchases.configure({ apiKey });
+  return _initPromise;
+}
+
+// Wait for init, but cap the wait so callers never hang indefinitely
+function waitForInit(ms = 6000): Promise<void> {
+  return Promise.race([
+    _initPromise,
+    new Promise<void>(resolve => setTimeout(resolve, ms)),
+  ]);
 }
 
 export async function isExplorer(): Promise<boolean> {
   if (!Capacitor.isNativePlatform()) return false;
-
   try {
+    await waitForInit();
     const Purchases = await getPurchases();
-    // Race against a 3s timeout — RevenueCat native calls can hang on simulator
     const timeout = new Promise<boolean>(resolve => setTimeout(() => resolve(false), 3000));
     const check = Purchases.getCustomerInfo().then(
       ({ customerInfo }) => customerInfo.entitlements.active['Noctua Pro'] !== undefined
@@ -38,10 +63,40 @@ export async function isExplorer(): Promise<boolean> {
 
 export async function getOfferings(): Promise<PurchasesOffering | null> {
   if (!Capacitor.isNativePlatform()) return null;
+  try {
+    await waitForInit();
+    const Purchases = await getPurchases();
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('getOfferings timeout')), 8000)
+    );
+    const offerings = await Promise.race([Purchases.getOfferings(), timeout]);
+    const current = offerings.current;
 
-  const Purchases = await getPurchases();
-  const offerings = await Purchases.getOfferings();
-  return offerings.current;
+    if (!current) {
+      console.warn('[purchases] RevenueCat returned no current offering', {
+        offeringIds: Object.keys(offerings.all ?? {}),
+      });
+    } else if (!current.availablePackages?.length) {
+      console.warn('[purchases] RevenueCat current offering has no available packages', {
+        currentOfferingId: current.identifier,
+        offeringIds: Object.keys(offerings.all ?? {}),
+      });
+    } else {
+      console.info('[purchases] RevenueCat offering loaded', {
+        currentOfferingId: current.identifier,
+        packages: current.availablePackages.map(pkg => ({
+          packageId: pkg.identifier,
+          packageType: pkg.packageType,
+          productId: pkg.product.identifier,
+        })),
+      });
+    }
+
+    return current;
+  } catch (err) {
+    console.warn('[purchases] getOfferings failed:', describePurchasesError(err));
+    return null;
+  }
 }
 
 export async function purchasePackage(aPackage: PurchasesPackage): Promise<{ success: boolean; cancelled?: boolean }> {

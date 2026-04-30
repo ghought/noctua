@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { D, FRAMEWORK_META, V1_FRAMEWORKS } from '../design';
+import { D, FRAMEWORK_META, V1_FRAMEWORKS, primaryButton, smallTextButton, tapBase } from '../design';
 import { useStore } from '../store';
 import { HairlineRow } from '../components/HairlineRow';
 import { FrameBox } from '../components/FrameBox';
@@ -22,6 +22,7 @@ export function Settings({ navigate, onShowPaywall }: Props) {
   const [notifHour, setNotifHour] = useState(8);
   const [notifMinute, setNotifMinute] = useState(0);
   const isNative = Capacitor.isNativePlatform();
+  const canExport = !isNative || explorer || settings.isSubscribed;
 
   useEffect(() => {
     if (!isNative) return;
@@ -37,20 +38,44 @@ export function Settings({ navigate, onShowPaywall }: Props) {
 
   const setFramework = (fw: FrameworkKey) => updateSettings({ defaultFramework: fw });
 
-  const exportData = () => {
+  const exportData = async () => {
+    if (!canExport) {
+      onShowPaywall();
+      return;
+    }
+
     const data = {
       exportedAt: new Date().toISOString(),
       dreams,
       symbols,
       settings: { defaultFramework: settings.defaultFramework },
     };
+    const filename = `noctua-archive-${new Date().toISOString().slice(0, 10)}.json`;
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const file = new File([blob], filename, { type: 'application/json' });
+    const nav = navigator as Navigator & {
+      canShare?: (data: ShareData) => boolean;
+      share?: (data: ShareData) => Promise<void>;
+    };
+
+    if (nav.share && (!nav.canShare || nav.canShare({ files: [file] }))) {
+      try {
+        await nav.share({ files: [file], title: 'Noctua Archive' });
+        return;
+      } catch (err: any) {
+        if (err?.name === 'AbortError') return;
+      }
+    }
+
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `noctua-archive-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = filename;
+    a.target = '_blank';
+    document.body.appendChild(a);
     a.click();
-    URL.revokeObjectURL(url);
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
   const resetAll = () => {
@@ -86,17 +111,17 @@ export function Settings({ navigate, onShowPaywall }: Props) {
   return (
     <div style={{ background: D.bg, minHeight: '100dvh', fontFamily: D.sans, color: D.text, paddingBottom: 60 }}>
       {/* Top */}
-      <div style={{ padding: '56px 22px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ padding: '48px 18px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
         <button
           onClick={() => navigate({ name: 'archive' })}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: D.mono, fontSize: 9, letterSpacing: 2, color: D.textDim, padding: 0 }}
+          style={{ ...smallTextButton(D.textSoft), borderColor: D.rule }}
         >
           ← ARCHIVE
         </button>
-        <div style={{ fontFamily: D.mono, fontSize: 9, letterSpacing: 2, color: D.gold }}>
+        <div style={{ fontFamily: D.mono, fontSize: 9, letterSpacing: 1.5, color: D.gold, flex: 1, textAlign: 'center' }}>
           NOCTUA · SETTINGS
         </div>
-        <div style={{ width: 60 }} />
+        <div style={{ width: 72 }} />
       </div>
 
       <div style={{ padding: '18px 22px 0' }}>
@@ -124,10 +149,8 @@ export function Settings({ navigate, onShowPaywall }: Props) {
             <button
               onClick={onShowPaywall}
               style={{
-                width: '100%', marginTop: 12, padding: '11px 0',
-                background: D.gold, color: D.bg,
-                fontFamily: D.mono, fontSize: 10, letterSpacing: 2,
-                fontWeight: 600, border: 'none', cursor: 'pointer',
+                ...primaryButton(),
+                marginTop: 12,
               }}
             >
               UPGRADE TO EXPLORER
@@ -147,18 +170,36 @@ export function Settings({ navigate, onShowPaywall }: Props) {
             <button
               onClick={toggleNotifications}
               style={{
-                width: 44, height: 26, borderRadius: 13,
-                background: notifEnabled ? D.gold : D.rule,
-                border: 'none', cursor: 'pointer', position: 'relative',
-                transition: 'background 0.2s',
+                width: 54,
+                height: 44,
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                position: 'relative',
+                padding: 0,
               }}
             >
               <div style={{
-                position: 'absolute', top: 3,
-                left: notifEnabled ? 21 : 3,
-                width: 20, height: 20, borderRadius: 10,
-                background: D.bg, transition: 'left 0.2s',
-              }} />
+                position: 'absolute',
+                top: 9,
+                right: 0,
+                width: 44,
+                height: 26,
+                borderRadius: 13,
+                background: notifEnabled ? D.gold : D.rule,
+                transition: 'background 0.2s',
+              }}>
+                <div style={{
+                  position: 'absolute',
+                  top: 3,
+                  left: notifEnabled ? 21 : 3,
+                  width: 20,
+                  height: 20,
+                  borderRadius: 10,
+                  background: D.bg,
+                  transition: 'left 0.2s',
+                }} />
+              </div>
             </button>
           </div>
           {notifEnabled && (
@@ -219,6 +260,7 @@ export function Settings({ navigate, onShowPaywall }: Props) {
                 onClick={() => setFramework(fw)}
                 style={{
                   flex: 1, textAlign: 'center', padding: '10px 0',
+                  ...tapBase,
                   fontFamily: D.mono, fontSize: 9, letterSpacing: 1.5,
                   background: sel ? meta.color : 'transparent',
                   color: sel ? D.bg : meta.color,
@@ -245,20 +287,25 @@ export function Settings({ navigate, onShowPaywall }: Props) {
         <button
           onClick={exportData}
           style={{
-            width: '100%', padding: '11px 0', textAlign: 'center',
-            border: `1px solid ${D.rule}`, color: D.textSoft,
+            ...tapBase,
+            width: '100%', padding: '0 12px', textAlign: 'center',
+            border: `1px solid ${canExport ? D.rule : D.goldDim}`,
+            color: canExport ? D.textSoft : D.gold,
             fontFamily: D.mono, fontSize: 10, letterSpacing: 2,
-            background: 'none', cursor: 'pointer', marginBottom: 10,
+            background: canExport ? 'none' : 'rgba(201,168,102,0.06)',
+            cursor: 'pointer',
+            marginBottom: 10,
           }}
         >
-          EXPORT ARCHIVE (JSON)
+          {canExport ? 'EXPORT ARCHIVE (JSON)' : 'UPGRADE TO EXPORT'}
         </button>
 
         {!showReset ? (
           <button
             onClick={() => setShowReset(true)}
             style={{
-              width: '100%', padding: '11px 0', textAlign: 'center',
+              ...tapBase,
+              width: '100%', padding: '0 12px', textAlign: 'center',
               border: `1px solid ${D.ruleSoft}`, color: D.textDim,
               fontFamily: D.mono, fontSize: 10, letterSpacing: 2,
               background: 'none', cursor: 'pointer',
@@ -274,13 +321,13 @@ export function Settings({ navigate, onShowPaywall }: Props) {
             <div style={{ display: 'flex', gap: 10 }}>
               <button
                 onClick={() => setShowReset(false)}
-                style={{ flex: 1, padding: '10px 0', border: `1px solid ${D.rule}`, color: D.textDim, fontFamily: D.mono, fontSize: 10, letterSpacing: 2, background: 'none', cursor: 'pointer' }}
+                style={{ ...tapBase, flex: 1, padding: '0 12px', border: `1px solid ${D.rule}`, color: D.textDim, fontFamily: D.mono, fontSize: 10, letterSpacing: 2, background: 'none', cursor: 'pointer' }}
               >
                 CANCEL
               </button>
               <button
                 onClick={resetAll}
-                style={{ flex: 1, padding: '10px 0', background: D.ruby, color: D.text, fontFamily: D.mono, fontSize: 10, letterSpacing: 2, fontWeight: 600, border: 'none', cursor: 'pointer' }}
+                style={{ ...tapBase, flex: 1, padding: '0 12px', background: D.ruby, color: D.text, fontFamily: D.mono, fontSize: 10, letterSpacing: 2, fontWeight: 600, border: 'none', cursor: 'pointer' }}
               >
                 DELETE
               </button>

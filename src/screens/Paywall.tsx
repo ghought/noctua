@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { D } from '../design';
+import { D, primaryButton, smallTextButton, tapBase } from '../design';
+import { useStore } from '../store';
 import { getOfferings, purchasePackage, restorePurchases } from '../lib/purchases';
 
 interface Props {
@@ -16,9 +17,11 @@ const FEATURES = [
 ];
 
 export function Paywall({ onUnlocked, onDismiss }: Props) {
+  const { updateSettings } = useStore();
   const [offering, setOffering] = useState<any>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [offeringsLoading, setOfferingsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -28,7 +31,8 @@ export function Paywall({ onUnlocked, onDismiss }: Props) {
         const yearly = o.availablePackages.find((p: any) => p.packageType === 'ANNUAL');
         setSelected(yearly?.identifier ?? o.availablePackages[0].identifier);
       }
-    }).catch(() => setError('Could not load offerings. Check your connection.'));
+    }).catch(() => setError('Could not load subscription options. Check your connection and try again.'))
+      .finally(() => setOfferingsLoading(false));
   }, []);
 
   const purchase = async () => {
@@ -40,8 +44,10 @@ export function Paywall({ onUnlocked, onDismiss }: Props) {
     setError(null);
     try {
       const { success, cancelled } = await purchasePackage(pkg);
-      if (success) onUnlocked();
-      else if (!cancelled) setError('Purchase not completed. Please try again.');
+      if (success) {
+        updateSettings({ isSubscribed: true });
+        onUnlocked();
+      } else if (!cancelled) setError('Purchase not completed. Please try again.');
     } catch {
       setError('Purchase failed. Please try again.');
     } finally {
@@ -54,8 +60,10 @@ export function Paywall({ onUnlocked, onDismiss }: Props) {
     setError(null);
     try {
       const active = await restorePurchases();
-      if (active) onUnlocked();
-      else setError('No previous purchase found for this Apple ID.');
+      if (active) {
+        updateSettings({ isSubscribed: true });
+        onUnlocked();
+      } else setError('No previous purchase found for this Apple ID.');
     } catch {
       setError('Restore failed. Please try again.');
     } finally {
@@ -71,13 +79,13 @@ export function Paywall({ onUnlocked, onDismiss }: Props) {
   return (
     <div style={{ background: D.bg, minHeight: '100dvh', fontFamily: D.sans, color: D.text, paddingBottom: 40 }}>
       {/* Header */}
-      <div style={{ padding: '56px 22px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ padding: '48px 18px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
         <div style={{ fontFamily: D.mono, fontSize: 9, letterSpacing: 2, color: D.gold }}>
           NOCTUA EXPLORER
         </div>
         <button
           onClick={onDismiss}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: D.mono, fontSize: 9, letterSpacing: 2, color: D.textDim, padding: 0 }}
+          style={smallTextButton(D.textSoft)}
         >
           NOT NOW
         </button>
@@ -106,6 +114,16 @@ export function Paywall({ onUnlocked, onDismiss }: Props) {
 
       {/* Package selector */}
       <div style={{ padding: '24px 22px 0' }}>
+        {offeringsLoading && (
+          <div style={{ fontFamily: D.mono, fontSize: 10, letterSpacing: 2, color: D.textDim, textAlign: 'center', padding: '20px 0' }}>
+            LOADING OPTIONS…
+          </div>
+        )}
+        {!offeringsLoading && sorted.length === 0 && !error && (
+          <div style={{ fontFamily: D.mono, fontSize: 10, letterSpacing: 1.5, color: D.textDim, textAlign: 'center', padding: '16px 0', lineHeight: 1.8 }}>
+            Subscription options unavailable.{'\n'}Please try again later.
+          </div>
+        )}
         {sorted.map((pkg: any) => {
           const sel = selected === pkg.identifier;
           const isPopular = pkg.packageType === 'ANNUAL';
@@ -116,6 +134,7 @@ export function Paywall({ onUnlocked, onDismiss }: Props) {
               style={{
                 width: '100%',
                 marginBottom: 10,
+                minHeight: 66,
                 padding: '14px 16px',
                 textAlign: 'left',
                 background: sel ? 'rgba(201,168,102,0.08)' : 'transparent',
@@ -163,37 +182,29 @@ export function Paywall({ onUnlocked, onDismiss }: Props) {
       <div style={{ padding: '16px 22px 0' }}>
         <button
           onClick={purchase}
-          disabled={loading || !offering}
+          disabled={loading || offeringsLoading || !offering || !selected}
           style={{
-            width: '100%',
-            padding: '14px 0',
-            background: loading ? D.rule : D.gold,
-            color: D.bg,
-            fontFamily: D.mono,
-            fontSize: 11,
-            letterSpacing: 2,
-            fontWeight: 600,
-            border: 'none',
-            cursor: loading ? 'default' : 'pointer',
+            ...primaryButton(loading || offeringsLoading || !offering || !selected),
           }}
         >
-          {loading ? 'PROCESSING…' : 'CONTINUE'}
+          {loading ? 'PROCESSING…' : offeringsLoading ? 'LOADING…' : 'CONTINUE'}
         </button>
 
         <button
           onClick={restore}
           disabled={loading}
           style={{
+            ...tapBase,
             width: '100%',
             marginTop: 12,
             background: 'none',
-            border: 'none',
+            border: `1px solid ${D.ruleSoft}`,
             color: D.textDim,
             fontFamily: D.mono,
             fontSize: 9,
             letterSpacing: 2,
             cursor: 'pointer',
-            padding: '8px 0',
+            padding: '0 12px',
           }}
         >
           RESTORE PURCHASE

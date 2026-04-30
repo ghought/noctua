@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { D, FRAMEWORK_META, V1_FRAMEWORKS } from '../design';
+import { D, FRAMEWORK_META, V1_FRAMEWORKS, primaryButton, smallTextButton, tapBase } from '../design';
 import { useStore, formatEntryDate } from '../store';
 import { interpretDream } from '../api/interpret';
 import { FrameBox } from '../components/FrameBox';
@@ -27,7 +27,7 @@ interface Props {
 }
 
 export function Interpretation({ navigate, dreamId, initialFramework, onShowPaywall }: Props) {
-  const { getDream, dreams, addInterpretation, updateDreamTitle } = useStore();
+  const { getDream, dreams, addInterpretation, updateDreamTitle, settings, updateSettings } = useStore();
   const dream = getDream(dreamId);
 
   const [framework, setFramework] = useState<FrameworkKey>(
@@ -49,8 +49,26 @@ export function Interpretation({ navigate, dreamId, initialFramework, onShowPayw
 
   const generate = async () => {
     if (!dream) return;
-    setLoading(true);
     setError(null);
+
+    // Subscription gate: check local state first (instant), then fast RevenueCat fallback
+    // Local state is set by actual purchase/restore — never by RevenueCat polling alone,
+    // which is unreliable in TestFlight sandbox environments
+    const count = getInterpretationCountThisMonth(dreams);
+    if (count >= FREE_TIER_LIMIT && !settings.isSubscribed) {
+      const explorer = await Promise.race([
+        isExplorer(),
+        new Promise<boolean>(resolve => setTimeout(() => resolve(false), 1500)),
+      ]);
+      if (explorer) {
+        updateSettings({ isSubscribed: true }); // legitimate subscriber on another device
+      } else {
+        onShowPaywall();
+        return;
+      }
+    }
+
+    setLoading(true);
 
     // Safety net: if anything hangs, surface an error after 45s rather than loading forever
     let done = false;
@@ -63,15 +81,6 @@ export function Interpretation({ navigate, dreamId, initialFramework, onShowPayw
     }, 45000);
 
     try {
-      const count = getInterpretationCountThisMonth(dreams);
-      if (count >= FREE_TIER_LIMIT) {
-        const explorer = await isExplorer();
-        if (!explorer) {
-          onShowPaywall();
-          return;
-        }
-      }
-
       const recent = dreams.filter(d => d.id !== dream.id).slice(0, 5);
       const { interpretation, title } = await interpretDream(dream, framework, recent);
       addInterpretation(dream.id, interpretation);
@@ -101,19 +110,19 @@ export function Interpretation({ navigate, dreamId, initialFramework, onShowPayw
   return (
     <div style={{ background: D.bg, minHeight: '100dvh', fontFamily: D.sans, color: D.text, paddingBottom: 40 }}>
       {/* Top */}
-      <div style={{ padding: '56px 22px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ padding: '48px 18px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
         <button
           onClick={() => navigate({ name: 'archive' })}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: D.mono, fontSize: 9, letterSpacing: 2, color: D.textDim, padding: 0 }}
+          style={{ ...smallTextButton(D.textSoft), borderColor: D.rule }}
         >
-          ← №{String(dream.entryNumber).padStart(4, '0')}
+          ← ARCHIVE
         </button>
-        <div style={{ fontFamily: D.mono, fontSize: 9, letterSpacing: 2, color: D.gold }}>
+        <div style={{ fontFamily: D.mono, fontSize: 9, letterSpacing: 1.5, color: D.gold, textAlign: 'center', flex: 1, lineHeight: 1.5 }}>
           {interp ? `INTERPRETED · ${formatEntryDate(interp.generatedAt)}` : 'AWAITING INTERPRETATION'}
         </div>
         <button
           onClick={() => navigate({ name: 'capture', editId: dreamId })}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: D.mono, fontSize: 9, letterSpacing: 2, color: D.textDim, padding: 0 }}
+          style={smallTextButton(D.gold)}
         >
           EDIT
         </button>
@@ -132,7 +141,8 @@ export function Interpretation({ navigate, dreamId, initialFramework, onShowPayw
               style={{
                 flex: 1,
                 textAlign: 'center',
-                padding: '8px 0',
+                ...tapBase,
+                padding: '0 4px',
                 fontFamily: D.mono,
                 fontSize: 9,
                 letterSpacing: 1.5,
@@ -187,18 +197,8 @@ export function Interpretation({ navigate, dreamId, initialFramework, onShowPayw
             <button
               onClick={generate}
               style={{
-                width: '100%',
+                ...primaryButton(),
                 marginTop: 12,
-                padding: '9px 0',
-                textAlign: 'center',
-                background: D.gold,
-                color: D.bg,
-                fontFamily: D.mono,
-                fontSize: 10,
-                letterSpacing: 2,
-                fontWeight: 600,
-                border: 'none',
-                cursor: 'pointer',
               }}
             >
               RETRY
@@ -218,7 +218,7 @@ export function Interpretation({ navigate, dreamId, initialFramework, onShowPayw
             </div>
             <div style={{
               fontFamily: D.slab,
-              fontSize: 17,
+              fontSize: 19,
               fontWeight: 400,
               color: D.text,
               lineHeight: 1.55,
@@ -270,7 +270,7 @@ export function Interpretation({ navigate, dreamId, initialFramework, onShowPayw
                     <span style={{ width: 6, height: 6, borderRadius: 3, background: c, flexShrink: 0 }} />
                   </div>
                   <div style={{
-                    fontSize: 13,
+                    fontSize: 15,
                     color: D.textSoft,
                     lineHeight: 1.55,
                     paddingLeft: 32,
@@ -289,7 +289,7 @@ export function Interpretation({ navigate, dreamId, initialFramework, onShowPayw
               III · EMOTIONAL LANDSCAPE
             </div>
             <div style={{
-              fontSize: 14,
+              fontSize: 16,
               color: D.textSoft,
               lineHeight: 1.6,
             }}>
@@ -303,7 +303,7 @@ export function Interpretation({ navigate, dreamId, initialFramework, onShowPayw
               IV · CONNECTION TO WAKING LIFE
             </div>
             <div style={{
-              fontSize: 14,
+              fontSize: 16,
               color: D.textSoft,
               lineHeight: 1.6,
             }}>
@@ -336,7 +336,7 @@ export function Interpretation({ navigate, dreamId, initialFramework, onShowPayw
                     </span>
                     <span style={{
                       fontFamily: D.slab,
-                      fontSize: 14,
+                      fontSize: 16,
                       fontStyle: 'italic',
                       color: D.text,
                       lineHeight: 1.55,
@@ -355,8 +355,9 @@ export function Interpretation({ navigate, dreamId, initialFramework, onShowPayw
             <button
               onClick={generate}
               style={{
+                ...tapBase,
                 flex: 1,
-                padding: '11px 0',
+                padding: '0 12px',
                 textAlign: 'center',
                 border: `1px solid ${D.rule}`,
                 color: D.textDim,
@@ -375,17 +376,8 @@ export function Interpretation({ navigate, dreamId, initialFramework, onShowPayw
                 if (fw) setFramework(fw);
               }}
               style={{
+                ...primaryButton(),
                 flex: 1,
-                padding: '11px 0',
-                textAlign: 'center',
-                background: D.gold,
-                color: D.bg,
-                fontFamily: D.mono,
-                fontSize: 10,
-                letterSpacing: 2,
-                fontWeight: 600,
-                border: 'none',
-                cursor: 'pointer',
               }}
             >
               SWITCH LENS

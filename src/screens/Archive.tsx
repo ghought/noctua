@@ -1,4 +1,4 @@
-import { D, FRAMEWORK_META, dreamGlyph } from '../design';
+import { D, FRAMEWORK_META, dreamGlyph, iconButtonStyle, primaryButton, tapBase } from '../design';
 import { useStore, formatEntryDate, countThisMonth, dominantFramework } from '../store';
 import { TabBar } from '../components/TabBar';
 import { HairlineRow } from '../components/HairlineRow';
@@ -36,10 +36,11 @@ export function Archive({ navigate }: Props) {
     }}>
       {/* Top metadata strip */}
       <div style={{
-        padding: '56px 22px 0',
+        padding: '48px 18px 0',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
+        gap: 12,
       }}>
         <div style={{ fontFamily: D.mono, fontSize: 9, letterSpacing: 2, color: D.gold }}>
           NOCTUA · ARCHIVE
@@ -51,18 +52,15 @@ export function Archive({ navigate }: Props) {
           <button
             onClick={() => navigate({ name: 'settings' })}
             style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              padding: 0,
-              color: D.textDim,
-              display: 'flex',
-              alignItems: 'center',
+              ...iconButtonStyle(44, D.textSoft),
             }}
+            aria-label="Settings"
           >
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-              <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.2"/>
-              <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.2 3.2l1.4 1.4M11.4 11.4l1.4 1.4M3.2 12.8l1.4-1.4M11.4 4.6l1.4-1.4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+            <svg width="17" height="17" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+              <path d="M3 5h12M3 9h12M3 13h12" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>
+              <circle cx="7" cy="5" r="1.7" fill={D.bg} stroke="currentColor" strokeWidth="1.1"/>
+              <circle cx="12" cy="9" r="1.7" fill={D.bg} stroke="currentColor" strokeWidth="1.1"/>
+              <circle cx="6" cy="13" r="1.7" fill={D.bg} stroke="currentColor" strokeWidth="1.1"/>
             </svg>
           </button>
         </div>
@@ -136,17 +134,8 @@ export function Archive({ navigate }: Props) {
               <button
                 onClick={() => navigate({ name: 'capture' })}
                 style={{
+                  ...primaryButton(),
                   flex: 1,
-                  padding: '9px 0',
-                  textAlign: 'center',
-                  background: D.gold,
-                  color: D.bg,
-                  fontFamily: D.mono,
-                  fontSize: 10,
-                  letterSpacing: 2,
-                  fontWeight: 600,
-                  border: 'none',
-                  cursor: 'pointer',
                 }}
               >
                 BEGIN ENTRY
@@ -184,13 +173,14 @@ export function Archive({ navigate }: Props) {
                       : { name: 'capture', editId: dream.id }
                   )}
                   style={{
+                    ...tapBase,
                     display: 'block',
                     width: '100%',
                     textAlign: 'left',
                     background: 'none',
                     border: 'none',
                     cursor: 'pointer',
-                    padding: '14px 0',
+                    padding: '16px 0',
                     borderBottom: i < dreams.slice(0, 20).length - 1
                       ? `1px solid ${D.ruleSoft}`
                       : 'none',
@@ -199,16 +189,16 @@ export function Archive({ navigate }: Props) {
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
                     <span style={{
                       fontFamily: D.mono,
-                      fontSize: 9,
+                      fontSize: 11,
                       color: D.textDim,
                       letterSpacing: 1.5,
-                      width: 42,
+                      width: 48,
                     }}>
                       №{String(dream.entryNumber).padStart(4, '0')}
                     </span>
                     <span style={{
                       fontFamily: D.mono,
-                      fontSize: 9,
+                      fontSize: 11,
                       color: D.gold,
                       letterSpacing: 1.5,
                     }}>
@@ -217,17 +207,17 @@ export function Archive({ navigate }: Props) {
                     <span style={{ flex: 1 }} />
                     <span style={{
                       fontFamily: D.mono,
-                      fontSize: 9,
+                      fontSize: 11,
                       color: fw.color,
                       letterSpacing: 1.5,
                     }}>
                       {fw.short}
                     </span>
-                    <span style={{ fontSize: 14, color: fw.color }}>{glyph}</span>
+                    <span style={{ fontSize: 15, color: fw.color }}>{glyph}</span>
                   </div>
                   <div style={{
                     fontFamily: D.slab,
-                    fontSize: 19,
+                    fontSize: 21,
                     fontWeight: 400,
                     color: dream.isFragment ? D.textSoft : D.text,
                     marginTop: 6,
@@ -239,10 +229,10 @@ export function Archive({ navigate }: Props) {
                   </div>
                   <div style={{
                     fontFamily: D.sans,
-                    fontSize: 13,
+                    fontSize: 14,
                     color: D.textSoft,
                     marginTop: 4,
-                    lineHeight: 1.45,
+                    lineHeight: 1.5,
                     fontStyle: 'italic',
                     overflow: 'hidden',
                     display: '-webkit-box',
@@ -279,10 +269,10 @@ export function Archive({ navigate }: Props) {
           onClick={() => navigate({ name: 'capture' })}
           style={{
             position: 'fixed',
-            bottom: 90,
+            bottom: 'calc(env(safe-area-inset-bottom, 16px) + 76px)',
             right: 'max(calc(50vw - 215px + 16px), 16px)',
-            width: 44,
-            height: 44,
+            width: 52,
+            height: 52,
             background: D.gold,
             border: 'none',
             cursor: 'pointer',
@@ -292,7 +282,7 @@ export function Archive({ navigate }: Props) {
             zIndex: 90,
           }}
         >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
             <path d="M8 2v12M2 8h12" stroke={D.bg} strokeWidth="1.8" strokeLinecap="round"/>
           </svg>
         </button>

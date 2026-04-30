@@ -25,6 +25,7 @@ function save(key: string, value: unknown) {
 const defaultSettings: Settings = {
   defaultFramework: 'jungian',
   onboarded: false,
+  isSubscribed: false,
 };
 
 // ── Context ───────────────────────────────────────────────────

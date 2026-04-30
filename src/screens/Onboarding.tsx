@@ -33,8 +33,9 @@ export function Onboarding({ onComplete }: Props) {
 
   return (
     <div style={{
+      position: 'fixed',
+      inset: 0,
       background: D.bg,
-      minHeight: '100dvh',
       fontFamily: D.sans,
       color: D.text,
       display: 'flex',
@@ -48,8 +49,9 @@ export function Onboarding({ onComplete }: Props) {
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
-          padding: '60px 32px 40px',
+          padding: '44px 32px 32px',
           animation: 'fadeIn 0.5s ease',
+          overflow: 'hidden',
         }}>
           <div style={{ position: 'relative', marginBottom: 48 }}>
             <svg width="120" height="80" viewBox="0 0 120 80" style={{ display: 'block' }}>
@@ -137,8 +139,9 @@ export function Onboarding({ onComplete }: Props) {
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
-          padding: '60px 32px 40px',
+          padding: '44px 32px 32px',
           animation: 'fadeIn 0.4s ease',
+          overflow: 'hidden',
         }}>
           <div style={{ fontFamily: D.mono, fontSize: 9, letterSpacing: 2, color: D.gold, marginBottom: 24 }}>
             HOW IT WORKS
@@ -206,8 +209,9 @@ export function Onboarding({ onComplete }: Props) {
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
-          padding: '60px 32px 40px',
+          padding: '44px 32px 32px',
           animation: 'fadeIn 0.4s ease',
+          overflow: 'hidden',
         }}>
           <div style={{ fontFamily: D.mono, fontSize: 9, letterSpacing: 2, color: D.gold, marginBottom: 24 }}>
             YOUR PRIVACY
@@ -269,25 +273,27 @@ export function Onboarding({ onComplete }: Props) {
       {step === 'framework' && (
         <div style={{
           flex: 1,
-          padding: '60px 22px 40px',
+          display: 'flex',
+          flexDirection: 'column',
+          padding: '44px 22px 20px',
           animation: 'fadeIn 0.4s ease',
-          overflowY: 'auto',
+          overflow: 'hidden',
         }}>
-          <div style={{ fontFamily: D.mono, fontSize: 9, letterSpacing: 2, color: D.gold, marginBottom: 8 }}>
+          <div style={{ fontFamily: D.mono, fontSize: 9, letterSpacing: 2, color: D.gold, marginBottom: 6 }}>
             YOUR LENS
           </div>
           <div style={{
             fontFamily: D.slab,
-            fontSize: 32,
+            fontSize: 28,
             fontWeight: 400,
             lineHeight: 1.1,
             letterSpacing: -0.3,
-            marginBottom: 8,
+            marginBottom: 6,
           }}>
             How would you like<br />
             <span style={{ fontStyle: 'italic', color: D.gold }}>your dreams read?</span>
           </div>
-          <div style={{ fontSize: 13, color: D.textSoft, lineHeight: 1.6, marginBottom: 28 }}>
+          <div style={{ fontSize: 12, color: D.textSoft, lineHeight: 1.5, marginBottom: 16 }}>
             You can switch frameworks at any time, or read the same dream through multiple lenses.
           </div>
 
@@ -302,7 +308,7 @@ export function Onboarding({ onComplete }: Props) {
                   display: 'block',
                   width: '100%',
                   textAlign: 'left',
-                  marginBottom: 12,
+                  marginBottom: 8,
                   padding: 0,
                   border: `1px solid ${selected ? meta.color : D.rule}`,
                   background: selected ? `${meta.color}14` : 'transparent',
@@ -310,8 +316,8 @@ export function Onboarding({ onComplete }: Props) {
                   transition: 'border-color 0.15s, background 0.15s',
                 }}
               >
-                <div style={{ padding: '14px 16px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                <div style={{ padding: '10px 14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
                     <div style={{
                       width: 6, height: 6, borderRadius: 3,
                       background: selected ? meta.color : D.textDim,
@@ -324,7 +330,7 @@ export function Onboarding({ onComplete }: Props) {
                       {meta.name.toUpperCase()}
                     </div>
                   </div>
-                  <div style={{ fontSize: 13, color: selected ? D.textSoft : D.textDim, lineHeight: 1.55 }}>
+                  <div style={{ fontSize: 12, color: selected ? D.textSoft : D.textDim, lineHeight: 1.5 }}>
                     {FRAMEWORK_DESCRIPTIONS[fw]}
                   </div>
                 </div>
@@ -332,7 +338,7 @@ export function Onboarding({ onComplete }: Props) {
             );
           })}
 
-          <div style={{ fontSize: 12, color: D.textDim, fontStyle: 'italic', marginBottom: 24, lineHeight: 1.5, marginTop: 4 }}>
+          <div style={{ fontSize: 11, color: D.textDim, fontStyle: 'italic', marginBottom: 14, lineHeight: 1.4, marginTop: 4 }}>
             More frameworks — Freudian, Gestalt, Existential — available in a future update.
           </div>
 
@@ -340,7 +346,7 @@ export function Onboarding({ onComplete }: Props) {
             onClick={finish}
             style={{
               width: '100%',
-              padding: '14px 0',
+              padding: '13px 0',
               background: D.gold,
               color: D.bg,
               fontFamily: D.mono,
@@ -349,6 +355,7 @@ export function Onboarding({ onComplete }: Props) {
               fontWeight: 600,
               border: 'none',
               cursor: 'pointer',
+              marginTop: 'auto',
             }}
           >
             BEGIN →

@@ -12,6 +12,11 @@ interface ServerResponse {
   error?: string;
 }
 
+interface TitleResponse {
+  title: string;
+  error?: string;
+}
+
 // On native, fetch() is patched by CapacitorHttp (capacitor.config.ts) to use
 // native URLSession — no WebView CORS or ATS restrictions.
 // On web, relative path works via Vite proxy (dev) or Express static serve (prod).
@@ -64,4 +69,33 @@ export async function interpretDream(
   };
 
   return { interpretation, title: data.title };
+}
+
+export async function generateDreamTitle(
+  dream: Pick<DreamEntry, 'body' | 'moods' | 'isFragment'>,
+): Promise<string> {
+  const url = `${API_BASE}/api/title`;
+
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        dream: { body: dream.body, moods: dream.moods, isFragment: dream.isFragment },
+      }),
+    });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    throw new Error(`Network error — check your connection and try again. (${msg})`);
+  }
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ error: 'Server error' })) as TitleResponse;
+    throw new Error(body.error ?? `Server returned ${res.status}`);
+  }
+
+  const data = await res.json() as TitleResponse;
+  if (data.error) throw new Error(data.error);
+  return data.title;
 }

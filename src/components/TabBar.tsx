@@ -1,4 +1,4 @@
-import { D } from '../design';
+import { D, tapBase } from '../design';
 import type { Screen } from '../types';
 
 type TabId = 'archive' | 'capture' | 'charts' | 'index';
@@ -25,7 +25,7 @@ export function TabBar({ active, navigate }: Props) {
       width: '100%',
       maxWidth: 430,
       paddingBottom: 'env(safe-area-inset-bottom, 16px)',
-      paddingTop: 14,
+      paddingTop: 12,
       background: `linear-gradient(180deg, transparent, ${D.bg} 30%)`,
       borderTop: `1px solid ${D.rule}`,
       display: 'flex',
@@ -46,12 +46,13 @@ export function TabBar({ active, navigate }: Props) {
             background: 'none',
             border: 'none',
             cursor: 'pointer',
-            padding: '4px 12px',
+            ...tapBase,
+            padding: '6px 12px',
             transition: 'color 0.15s',
           }}
         >
-          <div style={{ fontSize: 8, letterSpacing: 2, opacity: 0.7 }}>{tab.n}</div>
-          <div style={{ fontSize: 10, letterSpacing: 1.8, fontWeight: 500 }}>{tab.label}</div>
+          <div style={{ fontSize: 9, letterSpacing: 2, opacity: 0.7 }}>{tab.n}</div>
+          <div style={{ fontSize: 12, letterSpacing: 1.8, fontWeight: 500 }}>{tab.label}</div>
           <div style={{
             width: active === tab.id ? 16 : 0,
             height: 1,

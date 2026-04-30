@@ -1,4 +1,4 @@
-import { D, FRAMEWORK_META } from '../design';
+import { D, FRAMEWORK_META, primaryButton, smallTextButton } from '../design';
 import { useStore, countThisMonth, dominantFramework } from '../store';
 import { TabBar } from '../components/TabBar';
 import { FrameBox } from '../components/FrameBox';
@@ -60,7 +60,7 @@ export function Charts({ navigate }: Props) {
       paddingBottom: 90,
     }}>
       {/* Top */}
-      <div style={{ padding: '56px 22px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ padding: '48px 22px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ fontFamily: D.mono, fontSize: 9, letterSpacing: 2, color: D.gold }}>NOCTUA · CHARTS</div>
         <div style={{ fontFamily: D.mono, fontSize: 9, letterSpacing: 2, color: D.textDim }}>30D</div>
       </div>
@@ -97,16 +97,8 @@ export function Charts({ navigate }: Props) {
           <button
             onClick={() => navigate({ name: 'capture' })}
             style={{
+              ...primaryButton(),
               marginTop: 24,
-              padding: '10px 24px',
-              background: D.gold,
-              color: D.bg,
-              fontFamily: D.mono,
-              fontSize: 10,
-              letterSpacing: 2,
-              fontWeight: 600,
-              border: 'none',
-              cursor: 'pointer',
             }}
           >
             BEGIN ENTRY →
@@ -282,16 +274,8 @@ export function Charts({ navigate }: Props) {
                 <button
                   onClick={() => navigate({ name: 'index' })}
                   style={{
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontFamily: D.mono,
-                    fontSize: 10,
-                    color: D.gold,
-                    letterSpacing: 2,
+                    ...smallTextButton(D.gold),
                     marginTop: 14,
-                    fontWeight: 600,
-                    padding: 0,
                   }}
                 >
                   OPEN SYMBOL INDEX →

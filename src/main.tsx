@@ -17,12 +17,9 @@ function mount() {
   );
 }
 
-// Race purchases init against a 3s timeout.
-// If the native RevenueCat plugin hangs (common in simulator),
-// we mount immediately rather than waiting forever.
-const purchasesInit = initPurchases()
-  .catch(err => console.warn('[purchases] init failed:', err));
-
-const safeguard = new Promise<void>(resolve => setTimeout(resolve, 3000));
-
-Promise.race([purchasesInit, safeguard]).finally(mount);
+// Mount immediately — the app shell renders without waiting for RevenueCat.
+// purchases.ts stores the init promise in _initPromise; getOfferings() and
+// isExplorer() both await it internally (with their own timeouts), so there
+// is no longer any need to delay mounting here.
+mount();
+initPurchases().catch(err => console.warn('[purchases] init failed:', err));

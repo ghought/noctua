@@ -1,12 +1,14 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { D, FRAMEWORK_META, V1_FRAMEWORKS } from '../design';
+import { D, FRAMEWORK_META, V1_FRAMEWORKS, primaryButton, smallTextButton, tapBase } from '../design';
 import { useStore, newDreamId, formatEntryDate } from '../store';
 import { HairlineRow } from '../components/HairlineRow';
+import { generateDreamTitle } from '../api/interpret';
 import type { DreamEntry, Screen } from '../types';
 import type { FrameworkKey } from '../design';
 
 const MOODS = ['Anxious', 'Peaceful', 'Searching', 'Tender', 'Unsettled', 'Joyful', 'Confused', 'Melancholy', 'Hopeful', 'Strange'];
 const LINE_H = 26;
+const PLACEHOLDER_TITLES = new Set(['— recording —', '— fragment —']);
 
 interface Props {
   navigate: (s: Screen) => void;
@@ -19,6 +21,9 @@ export function Capture({ navigate, editId }: Props) {
   const existing = editId ? getDream(editId) : undefined;
 
   const [body, setBody] = useState(existing?.body ?? '');
+  const [title, setTitle] = useState(
+    existing && !PLACEHOLDER_TITLES.has(existing.title) ? existing.title : ''
+  );
   const [moods, setMoods] = useState<string[]>(existing?.moods ?? []);
   const [isFragment, setIsFragment] = useState(existing?.isFragment ?? false);
   const [framework, setFramework] = useState<FrameworkKey>(
@@ -26,6 +31,7 @@ export function Capture({ navigate, editId }: Props) {
   );
   const [showMoods, setShowMoods] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [dreamId] = useState(existing?.id ?? newDreamId());
   const [entryNumber] = useState(existing?.entryNumber ?? nextEntryNumber());
 
@@ -48,12 +54,42 @@ export function Capture({ navigate, editId }: Props) {
   // Placeholder title until Claude generates the real one
   const placeholderTitle = isFragment ? '— fragment —' : '— recording —';
 
-  const handleSave = useCallback((): DreamEntry => {
+  const localTitle = useCallback(() => {
+    const words = body
+      .replace(/[^\w\s'-]/g, ' ')
+      .trim()
+      .split(/\s+/)
+      .filter(w => w.length > 2)
+      .slice(0, 5);
+    if (!words.length) return placeholderTitle;
+    return words.map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+  }, [body, placeholderTitle]);
+
+  const resolveTitle = useCallback(async () => {
+    const manualTitle = title.trim();
+    if (manualTitle) return manualTitle;
+    if (!body.trim()) return placeholderTitle;
+
+    try {
+      const generated = await Promise.race([
+        generateDreamTitle({ body: body.trim(), moods, isFragment }),
+        new Promise<string>((_, reject) => setTimeout(() => reject(new Error('Title generation timeout')), 6000)),
+      ]);
+      return generated.trim() || localTitle();
+    } catch {
+      return localTitle();
+    }
+  }, [title, body, placeholderTitle, moods, isFragment, localTitle]);
+
+  const handleSave = useCallback(async (): Promise<DreamEntry> => {
+    setSaving(true);
+    const finalTitle = await resolveTitle();
+    setTitle(PLACEHOLDER_TITLES.has(finalTitle) ? '' : finalTitle);
     const dream: DreamEntry = {
       id: dreamId,
       entryNumber,
       date: existing?.date ?? new Date().toISOString(),
-      title: existing?.title ?? placeholderTitle,
+      title: finalTitle,
       body: body.trim(),
       moods,
       framework,
@@ -62,11 +98,12 @@ export function Capture({ navigate, editId }: Props) {
     };
     saveDream(dream);
     setSaved(true);
+    setSaving(false);
     return dream;
-  }, [dreamId, entryNumber, existing, placeholderTitle, body, moods, framework, isFragment, saveDream]);
+  }, [dreamId, entryNumber, existing, body, moods, framework, isFragment, saveDream, resolveTitle]);
 
-  const handleInterpret = () => {
-    const dream = handleSave();
+  const handleInterpret = async () => {
+    const dream = await handleSave();
     navigate({ name: 'interpretation', dreamId: dream.id, framework });
   };
 
@@ -80,43 +117,34 @@ export function Capture({ navigate, editId }: Props) {
     }}>
       {/* Top bar */}
       <div style={{
-        padding: '56px 22px 0',
+        padding: '48px 18px 0',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
+        gap: 10,
       }}>
         <button
           onClick={() => navigate({ name: 'archive' })}
           style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            fontFamily: D.mono,
-            fontSize: 9,
-            letterSpacing: 2,
-            color: D.textDim,
-            padding: 0,
+            ...smallTextButton(D.textSoft),
+            borderColor: D.rule,
           }}
         >
           ← ARCHIVE
         </button>
-        <div style={{ fontFamily: D.mono, fontSize: 9, letterSpacing: 2, color: D.gold }}>
-          ENTRY №{String(entryNumber).padStart(4, '0')} · {saved ? 'SAVED' : 'DRAFT'}
+        <div style={{ fontFamily: D.mono, fontSize: 9, letterSpacing: 1.5, color: D.gold, textAlign: 'center', flex: 1, lineHeight: 1.5 }}>
+          ENTRY №{String(entryNumber).padStart(4, '0')} · {saving ? 'TITLING' : saved ? 'SAVED' : 'DRAFT'}
         </div>
         <button
-          onClick={() => { handleSave(); navigate({ name: 'archive' }); }}
+          onClick={async () => { await handleSave(); navigate({ name: 'archive' }); }}
+          disabled={saving}
           style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            fontFamily: D.mono,
-            fontSize: 9,
-            letterSpacing: 2,
-            color: D.gold,
-            padding: 0,
+            ...smallTextButton(D.gold),
+            borderColor: D.goldDim,
+            opacity: saving ? 0.55 : 1,
           }}
         >
-          SAVE
+          {saving ? '...' : 'SAVE'}
         </button>
       </div>
 
@@ -124,6 +152,39 @@ export function Capture({ navigate, editId }: Props) {
       <div style={{ padding: '20px 22px 0' }}>
         <HairlineRow label="DATE" value={dateLabel} color={D.gold} />
         <HairlineRow label="WORDS" value={String(wordCount)} />
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          padding: '6px 0',
+          borderBottom: `1px solid ${D.ruleSoft}`,
+        }}>
+          <span style={{
+            fontFamily: D.mono,
+            fontSize: 9,
+            color: D.textDim,
+            letterSpacing: 1.5,
+            minWidth: 90,
+            textTransform: 'uppercase',
+          }}>TITLE</span>
+          <input
+            value={title}
+            onChange={e => setTitle(e.target.value)}
+            placeholder="AUTO ON SAVE"
+            maxLength={64}
+            style={{
+              flex: 1,
+              minHeight: 44,
+              fontFamily: D.slab,
+              fontSize: 16,
+              color: title ? D.text : D.textDim,
+              background: 'none',
+              border: 'none',
+              textAlign: 'right',
+              fontStyle: 'italic',
+            }}
+          />
+        </div>
         <div style={{
           display: 'flex',
           alignItems: 'baseline',
@@ -143,14 +204,15 @@ export function Capture({ navigate, editId }: Props) {
           <button
             onClick={() => setShowMoods(s => !s)}
             style={{
+              ...tapBase,
               background: 'none',
-              border: 'none',
+              border: `1px solid ${D.ruleSoft}`,
               cursor: 'pointer',
               fontFamily: D.mono,
               fontSize: 11,
               color: moods.length > 0 ? D.amethyst : D.textDim,
               letterSpacing: 0.5,
-              padding: 0,
+              padding: '0 12px',
             }}
           >
             {moods.length > 0 ? moods.join(' · ').toUpperCase() : 'TAG →'}
@@ -171,7 +233,8 @@ export function Capture({ navigate, editId }: Props) {
                 key={mood}
                 onClick={() => toggleMood(mood)}
                 style={{
-                  padding: '4px 10px',
+                  ...tapBase,
+                  padding: '0 12px',
                   fontFamily: D.mono,
                   fontSize: 9,
                   letterSpacing: 1.5,
@@ -188,7 +251,8 @@ export function Capture({ navigate, editId }: Props) {
             <button
               onClick={() => setIsFragment(f => !f)}
               style={{
-                padding: '4px 10px',
+                ...tapBase,
+                padding: '0 12px',
                 fontFamily: D.mono,
                 fontSize: 9,
                 letterSpacing: 1.5,
@@ -221,7 +285,8 @@ export function Capture({ navigate, editId }: Props) {
                 style={{
                   flex: 1,
                   textAlign: 'center',
-                  padding: '8px 0',
+                  ...tapBase,
+                  padding: '0 4px',
                   fontFamily: D.mono,
                   fontSize: 9,
                   letterSpacing: 1.5,
@@ -287,7 +352,7 @@ export function Capture({ navigate, editId }: Props) {
         maxWidth: 430,
         padding: '0 18px',
         paddingBottom: 'max(env(safe-area-inset-bottom, 16px), 16px)',
-        background: D.bg,
+        background: `linear-gradient(180deg, rgba(0,0,0,0.82), ${D.bg} 18%)`,
         borderTop: `1px solid ${D.rule}`,
         zIndex: 100,
       }}>
@@ -300,7 +365,15 @@ export function Capture({ navigate, editId }: Props) {
           <div style={{ display: 'flex', gap: 16, color: D.textSoft }}>
             <button
               onClick={() => setShowMoods(s => !s)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', padding: 0 }}
+              style={{
+                ...tapBase,
+                width: 44,
+                background: 'none',
+                border: `1px solid ${showMoods ? D.amethyst : D.ruleSoft}`,
+                cursor: 'pointer',
+                color: showMoods ? D.amethyst : 'inherit',
+                padding: 0,
+              }}
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <circle cx="8" cy="7" r="4" stroke="currentColor" strokeWidth="1.2"/>
@@ -309,7 +382,15 @@ export function Capture({ navigate, editId }: Props) {
             </button>
             <button
               onClick={() => bodyRef.current?.focus()}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', padding: 0 }}
+              style={{
+                ...tapBase,
+                width: 44,
+                background: 'none',
+                border: `1px solid ${D.ruleSoft}`,
+                cursor: 'pointer',
+                color: 'inherit',
+                padding: 0,
+              }}
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path d="M3 4h10M3 8h10M3 12h7" stroke="currentColor" strokeWidth="1.2"/>
@@ -319,21 +400,15 @@ export function Capture({ navigate, editId }: Props) {
 
           <button
             onClick={handleInterpret}
-            disabled={!body.trim()}
+            disabled={!body.trim() || saving}
             style={{
-              fontFamily: D.mono,
-              fontSize: 10,
-              letterSpacing: 2,
-              color: body.trim() ? D.gold : D.textDim,
-              fontWeight: 600,
-              background: 'none',
-              border: 'none',
-              cursor: body.trim() ? 'pointer' : 'default',
-              padding: 0,
+              ...primaryButton(!body.trim() || saving),
+              width: 'auto',
+              minWidth: 148,
               transition: 'color 0.15s',
             }}
           >
-            INTERPRET →
+            {saving ? 'SAVING…' : 'INTERPRET →'}
           </button>
         </div>
       </div>

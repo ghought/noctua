@@ -42,6 +42,7 @@ export interface SymbolRecord {
 export interface Settings {
   defaultFramework: FrameworkKey;
   onboarded: boolean;
+  isSubscribed: boolean;
 }
 
 export type Screen =
