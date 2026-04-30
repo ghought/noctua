@@ -96,6 +96,14 @@ const androidSizes = [
 
 const svgBuffer = Buffer.from(masterSvg);
 
+function iconPipeline(size) {
+  return sharp(svgBuffer)
+    .resize(size, size)
+    .flatten({ background: BG })
+    .removeAlpha()
+    .png({ palette: false });
+}
+
 // ── Generate iOS icons ─────────────────────────────────────────────────────
 
 const iosIconDir = join(root, 'ios/App/App/Assets.xcassets/AppIcon.appiconset');
@@ -110,10 +118,7 @@ for (const { size, scales } of iosSizes) {
       ? `icon-${px}.png`
       : `icon-${Math.round(size)}-${scale}x.png`;
 
-    await sharp(svgBuffer)
-      .resize(px, px)
-      .png()
-      .toFile(join(iosIconDir, filename));
+    await iconPipeline(px).toFile(join(iosIconDir, filename));
 
     iosEntries.push({
       filename,
@@ -144,15 +149,9 @@ for (const { dir, size } of androidSizes) {
   const outDir = join(root, `android/app/src/main/res/${dir}`);
   mkdirSync(outDir, { recursive: true });
 
-  await sharp(svgBuffer)
-    .resize(size, size)
-    .png()
-    .toFile(join(outDir, 'ic_launcher.png'));
+  await iconPipeline(size).toFile(join(outDir, 'ic_launcher.png'));
 
-  await sharp(svgBuffer)
-    .resize(size, size)
-    .png()
-    .toFile(join(outDir, 'ic_launcher_foreground.png'));
+  await iconPipeline(size).toFile(join(outDir, 'ic_launcher_foreground.png'));
 
   // Round icon variant (Android 8+)
   const roundedSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">
@@ -167,6 +166,8 @@ for (const { dir, size } of androidSizes) {
 
   await sharp(Buffer.from(roundedSvg))
     .resize(size, size)
+    .flatten({ background: BG })
+    .removeAlpha()
     .png()
     .toFile(join(outDir, 'ic_launcher_round.png'));
 
