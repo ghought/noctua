@@ -94,7 +94,26 @@ const androidSizes = [
   { dir: 'mipmap-xxxhdpi', size: 192 },
 ];
 
+const notificationIconSizes = [
+  { dir: 'drawable-mdpi',    size: 24 },
+  { dir: 'drawable-hdpi',    size: 36 },
+  { dir: 'drawable-xhdpi',   size: 48 },
+  { dir: 'drawable-xxhdpi',  size: 72 },
+  { dir: 'drawable-xxxhdpi', size: 96 },
+];
+
 const svgBuffer = Buffer.from(masterSvg);
+
+const notificationSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
+  <path fill="#fff" d="M20 35 C23 20 34 12 48 12 C62 12 73 20 76 35 C80 51 72 68 48 84 C24 68 16 51 20 35 Z"/>
+  <path fill="#000" d="M30 36 C35 29 41 26 48 26 C55 26 61 29 66 36 C61 33 55 33 51 36 C50 38 49 39 48 41 C47 39 46 38 45 36 C41 33 35 33 30 36 Z"/>
+  <circle cx="37" cy="46" r="11" fill="#000"/>
+  <circle cx="59" cy="46" r="11" fill="#000"/>
+  <circle cx="37" cy="46" r="4" fill="#fff"/>
+  <circle cx="59" cy="46" r="4" fill="#fff"/>
+  <path fill="#000" d="M48 52 L42 62 L48 68 L54 62 Z"/>
+  <path fill="#fff" d="M48 55 L45 61 L48 64 L51 61 Z"/>
+</svg>`;
 
 function iconPipeline(size) {
   return sharp(svgBuffer)
@@ -174,6 +193,20 @@ for (const { dir, size } of androidSizes) {
   console.log(`  Android ${dir} (${size}×${size})`);
 }
 
+// Android notification/status-bar icon. Android tints this asset, so keep it
+// monochrome with transparency instead of using the full launcher artwork.
+for (const { dir, size } of notificationIconSizes) {
+  const outDir = join(root, `android/app/src/main/res/${dir}`);
+  mkdirSync(outDir, { recursive: true });
+
+  await sharp(Buffer.from(notificationSvg))
+    .resize(size, size)
+    .png({ palette: false })
+    .toFile(join(outDir, 'ic_stat_noctua.png'));
+
+  console.log(`  Android notification ${dir} (${size}×${size})`);
+}
+
 // ── Save master SVG for reference ─────────────────────────────────────────
 
 mkdirSync(join(root, 'scripts/assets'), { recursive: true });
@@ -181,3 +214,4 @@ writeFileSync(join(root, 'scripts/assets/icon-master.svg'), masterSvg);
 console.log('\n✓ Master SVG saved to scripts/assets/icon-master.svg');
 console.log('✓ iOS icons written to ios/App/App/Assets.xcassets/AppIcon.appiconset/');
 console.log('✓ Android icons written to android/app/src/main/res/mipmap-*/');
+console.log('✓ Android notification icon written to android/app/src/main/res/drawable-*/');
